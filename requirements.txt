@@ -2,3 +2,4 @@ streamlit
 pyspark==3.1.2
 findspark
 pandas
+distutils
