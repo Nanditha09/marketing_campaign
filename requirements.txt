@@ -4,3 +4,4 @@ findspark
 matplotlib
 seaborn
 pandas
+distutils
