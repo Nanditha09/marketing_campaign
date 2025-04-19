@@ -1,25 +1,17 @@
-import os
 import streamlit as st
 from pyspark.sql import SparkSession
 from pyspark.ml.classification import GBTClassificationModel
-import findspark
-
-# Set Java and Spark environment variables
-os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"  # Adjust with your correct Java path
-os.environ["SPARK_HOME"] = "/content/spark-3.1.2-bin-hadoop3.2"  # Adjust with your correct Spark path
-
-# Initialize Spark
-findspark.init()
+from pyspark.ml.feature import StringIndexer
+import os
 
 # Start Spark session
-spark = SparkSession.builder \
-    .appName("ModelDeployment") \
-    .config("spark.executor.memory", "4g") \
-    .config("spark.driver.memory", "4g") \
-    .getOrCreate()
+spark = SparkSession.builder.appName("ModelDeployment").getOrCreate()
 
-# Model path (ensure correct path for your model)
-model_path = '/content/gbt_model'  # Adjust path if necessary
+# Model path
+model_path = '/content/gbt_model'
+
+# Define a global variable for the model
+model = None
 
 # Check if model exists
 if os.path.exists(model_path):
@@ -92,6 +84,10 @@ encoded_features = encode_features()
 
 # Create DataFrame for prediction
 def make_prediction(features):
+    if model is None:
+        st.write("Model is not loaded.")
+        return None
+    
     columns = ['age', 'job_index', 'marital_index', 'education_index', 'credit_default_int', 'house_loan_int', 'loan_int', 'contact_index', 'month_index', 'day_of_week_index', 'duration', 'campaign', 'pdays', 'previous', 'poutcome_index']
     df = spark.createDataFrame([features], columns)
     
@@ -101,9 +97,13 @@ def make_prediction(features):
 
 # When user clicks 'Predict' button
 if st.button("Predict"):
-    result = make_prediction(encoded_features)
-    
-    # Display prediction result
-    st.write("Prediction Results:")
-    prediction = result.select("prediction").head()[0]
-    st.write(f"Prediction: {prediction}")
+    if model:
+        result = make_prediction(encoded_features)
+        
+        # Display prediction result
+        if result:
+            st.write("Prediction Results:")
+            prediction = result.select("prediction").head()[0]
+            st.write(f"Prediction: {prediction}")
+    else:
+        st.write("Model is not loaded properly.")
