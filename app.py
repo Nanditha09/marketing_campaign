@@ -1,14 +1,25 @@
-
+import os
 import streamlit as st
 from pyspark.sql import SparkSession
 from pyspark.ml.classification import GBTClassificationModel
-import os
+import findspark
+
+# Set Java and Spark environment variables
+os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64"  # Adjust with your correct Java path
+os.environ["SPARK_HOME"] = "/content/spark-3.1.2-bin-hadoop3.2"  # Adjust with your correct Spark path
+
+# Initialize Spark
+findspark.init()
 
 # Start Spark session
-spark = SparkSession.builder.appName("ModelDeployment").getOrCreate()
+spark = SparkSession.builder \
+    .appName("ModelDeployment") \
+    .config("spark.executor.memory", "4g") \
+    .config("spark.driver.memory", "4g") \
+    .getOrCreate()
 
-# Model path
-model_path = '/content/gbt_model'
+# Model path (ensure correct path for your model)
+model_path = '/content/gbt_model'  # Adjust path if necessary
 
 # Check if model exists
 if os.path.exists(model_path):
