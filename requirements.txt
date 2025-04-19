@@ -1,7 +1,4 @@
 streamlit
 pyspark==3.1.2
 findspark
-matplotlib
-seaborn
 pandas
-distutils
